@@ -1,23 +1,35 @@
+### PHPStorm ###
+.idea/
+.idea_modules/
+
+### PHP ###
 /vendor/
-node_modules/
-npm-debug.log
-yarn-error.log
+composer.lock
 
-# Laravel 4 specific
-bootstrap/compiled.php
-app/storage/
-
-# Laravel 5 & Lumen specific
-public/storage
-public/hot
-
-# Laravel 5 & Lumen specific with changed public path
-public_html/storage
-public_html/hot
-
-storage/*.key
-.env
-Homestead.yaml
-Homestead.json
-/.vagrant
+### Testing ###
 .phpunit.result.cache
+.phpunit.cache/
+coverage/
+phpunit.xml
+
+### Operating System ###
+.DS_Store
+Thumbs.db
+
+### Environment ###
+.env
+.env.backup
+.env.testing
+
+### Build ###
+build/
+dist/
+
+### Logs ###
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### Package ###
+*.phar
