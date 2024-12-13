@@ -10,7 +10,6 @@ composer.lock
 .phpunit.result.cache
 .phpunit.cache/
 coverage/
-phpunit.xml
 
 ### Operating System ###
 .DS_Store
