@@ -21,7 +21,7 @@ class MatVStats
 
     public function __construct(
         private readonly DatabaseManager $db,
-        private readonly string $connection,
+        private readonly string $connection = 'pgsql',
         private readonly bool $enableLogging = false,
         private readonly bool $throwExceptions = true
     ) {}
@@ -48,11 +48,22 @@ class MatVStats
     public function initializeStats(): Collection
     {
         try {
-            $result = $this->db->connection($this->connection)
-                ->select("SELECT " . self::INIT_FUNCTION . "()");
+            // Debug: Check for materialized views first
+            $views = $this->db->connection($this->connection)
+                ->select("SELECT schemaname || '.' || matviewname as full_name FROM pg_matviews");
+            Log::info("Available materialized views: " . json_encode($views));
 
-            $this->logMessage('Materialized view statistics initialized successfully');
-            return collect($result);
+            // Execute init function
+            $result = $this->db->connection($this->connection)
+                ->select("SELECT public.tr1884_matvstats_fn_init()");
+            Log::info("Init function result: " . json_encode($result));
+
+            // Debug: Check table content
+            $tableContent = $this->db->connection($this->connection)
+                ->select("SELECT * FROM public.tr1884_matvstats_t_stats");
+            Log::info("Table content: " . json_encode($tableContent));
+
+            return collect($result)->pluck('tr1884_matvstats_fn_init');
         } catch (PDOException $e) {
             $this->handleError('Failed to initialize materialized view statistics', $e);
             return collect();
