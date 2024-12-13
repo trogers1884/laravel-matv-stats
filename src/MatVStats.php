@@ -10,10 +10,6 @@ use Trogers1884\LaravelMatVStats\Exceptions\MatVStatsException;
 
 class MatVStats
 {
-    /**
-     * SQL object name constants
-     */
-    private const TABLE_NAME = 'public.tr1884_matvstats_t_stats';
     private const VIEW_NAME = 'public.tr1884_matvstats_v_stats';
     private const INIT_FUNCTION = 'public.tr1884_matvstats_fn_init';
     private const RESET_FUNCTION = 'public.tr1884_matvstats_fn_reset_stats';
@@ -27,9 +23,6 @@ class MatVStats
     ) {
     }
 
-    /**
-     * Get all materialized view statistics
-     */
     public function getStats(): Collection
     {
         try {
@@ -44,26 +37,11 @@ class MatVStats
         }
     }
 
-    /**
-     * Initialize statistics for all existing materialized views
-     */
     public function initializeStats(): Collection
     {
         try {
-            // Debug: Check for materialized views first
-            $views = $this->db->connection($this->connection)
-                ->select("SELECT schemaname || '.' || matviewname as full_name FROM pg_matviews");
-            Log::info("Available materialized views: " . json_encode($views));
-
-            // Execute init function
             $result = $this->db->connection($this->connection)
-                ->select("SELECT public.tr1884_matvstats_fn_init()");
-            Log::info("Init function result: " . json_encode($result));
-
-            // Debug: Check table content
-            $tableContent = $this->db->connection($this->connection)
-                ->select("SELECT * FROM public.tr1884_matvstats_t_stats");
-            Log::info("Table content: " . json_encode($tableContent));
+                ->select("SELECT " . self::INIT_FUNCTION . "()");
 
             return collect($result)->pluck('tr1884_matvstats_fn_init');
         } catch (PDOException $e) {
@@ -73,41 +51,26 @@ class MatVStats
         }
     }
 
-    /**
-     * Reset statistics for specified materialized views or all if none specified
-     */
     public function resetStats(?array $views = null): Collection
     {
         try {
             if ($views === null || empty($views)) {
                 $result = $this->db->connection($this->connection)
-                    ->select("SELECT * FROM public.tr1884_matvstats_fn_reset_stats('*')");
-                Log::info("Reset all stats result: " . json_encode($result));
+                    ->select("SELECT * FROM " . self::RESET_FUNCTION . "('*')");
             } else {
                 $viewList = implode(',', array_map(fn ($view) => "'$view'", $views));
-                Log::info("Resetting stats for views: " . $viewList);
-                $sql = "SELECT * FROM public.tr1884_matvstats_fn_reset_stats($viewList)";
-                Log::info("Reset SQL: " . $sql);
-                $result = $this->db->connection($this->connection)->select($sql);
-                Log::info("Reset specific stats result: " . json_encode($result));
+                $result = $this->db->connection($this->connection)
+                    ->select("SELECT * FROM " . self::RESET_FUNCTION . "($viewList)");
             }
 
-            // Debug: Check what's being returned
-            $collection = collect($result)->pluck('tr1884_matvstats_fn_reset_stats');
-            Log::info("Returning collection: " . json_encode($collection));
-
-            return $collection;
+            return collect($result)->pluck('tr1884_matvstats_fn_reset_stats');
         } catch (PDOException $e) {
-            Log::error("Reset stats error: " . $e->getMessage());
             $this->handleError('Failed to reset materialized view statistics', $e);
 
             return collect();
         }
     }
 
-    /**
-     * Drop all package objects from the database
-     */
     public function dropObjects(): bool
     {
         try {
@@ -124,9 +87,6 @@ class MatVStats
         }
     }
 
-    /**
-     * Get statistics for a specific materialized view
-     */
     public function getStatsForView(string $viewName): ?object
     {
         try {
@@ -155,9 +115,6 @@ class MatVStats
         }
     }
 
-    /**
-     * Log messages if logging is enabled
-     */
     private function logMessage(string $message): void
     {
         if ($this->enableLogging) {
