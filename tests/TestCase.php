@@ -228,47 +228,49 @@ END;
 
             // Reset stats function
             "CREATE OR REPLACE FUNCTION public.tr1884_matvstats_fn_reset_stats(
-                VARIADIC mview text[] DEFAULT ARRAY['*'::text]
-            )
-                RETURNS SETOF text
-                LANGUAGE plpgsql
-                COST 100
-                VOLATILE PARALLEL UNSAFE
-            AS \$BODY\$
-            DECLARE 
-                v text;
-            BEGIN
-                FOREACH v IN ARRAY \$1 LOOP
-                    IF v = '*' THEN
-                        RETURN QUERY 
-                        UPDATE public.tr1884_matvstats_t_stats 
-                        SET 
-                            refresh_mv_last = NULL,
-                            refresh_count = 0,
-                            refresh_mv_time_last = NULL,
-                            refresh_mv_time_total = '00:00:00',
-                            refresh_mv_time_min = NULL,
-                            refresh_mv_time_max = NULL,
-                            reset_last = now() 
-                        RETURNING mv_name;
-                    ELSE
-                        RETURN QUERY 
-                        UPDATE public.tr1884_matvstats_t_stats 
-                        SET 
-                            refresh_mv_last = NULL,
-                            refresh_count = 0,
-                            refresh_mv_time_last = NULL,
-                            refresh_mv_time_total = '00:00:00',
-                            refresh_mv_time_min = NULL,
-                            refresh_mv_time_max = NULL,
-                            reset_last = now() 
-                        WHERE mv_name = v 
-                        RETURNING mv_name;
-                    END IF;
-                END LOOP;
-                RETURN;
-            END;
-            \$BODY\$",
+    VARIADIC mview text[] DEFAULT ARRAY['*'::text]
+)
+    RETURNS SETOF text
+    LANGUAGE plpgsql
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS \$BODY\$
+DECLARE 
+    v text;
+BEGIN
+    IF mview[1] = '*' THEN
+        UPDATE public.tr1884_matvstats_t_stats 
+        SET 
+            refresh_mv_last = NULL,
+            refresh_count = 0,
+            refresh_mv_time_last = NULL,
+            refresh_mv_time_total = '00:00:00',
+            refresh_mv_time_min = NULL,
+            refresh_mv_time_max = NULL,
+            reset_last = now();
+            
+        RETURN QUERY 
+            SELECT mv_name 
+            FROM public.tr1884_matvstats_t_stats;
+    ELSE
+        FOREACH v IN ARRAY mview LOOP
+            UPDATE public.tr1884_matvstats_t_stats 
+            SET 
+                refresh_mv_last = NULL,
+                refresh_count = 0,
+                refresh_mv_time_last = NULL,
+                refresh_mv_time_total = '00:00:00',
+                refresh_mv_time_min = NULL,
+                refresh_mv_time_max = NULL,
+                reset_last = now()
+            WHERE mv_name = v;
+            
+            RETURN QUERY 
+                SELECT v::text;
+        END LOOP;
+    END IF;
+END;
+\$BODY\$",
 
             // Create event triggers
             "CREATE EVENT TRIGGER tr1884_matvstats_tr_main ON ddl_command_end
