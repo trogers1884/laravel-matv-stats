@@ -78,16 +78,24 @@ class MatVStats
         try {
             if ($views === null || empty($views)) {
                 $result = $this->db->connection($this->connection)
-                    ->select("SELECT " . self::RESET_FUNCTION . "('*')");
+                    ->select("SELECT * FROM public.tr1884_matvstats_fn_reset_stats('*')");
+                Log::info("Reset all stats result: " . json_encode($result));
             } else {
                 $viewList = implode(',', array_map(fn($view) => "'$view'", $views));
-                $result = $this->db->connection($this->connection)
-                    ->select("SELECT " . self::RESET_FUNCTION . "($viewList)");
+                Log::info("Resetting stats for views: " . $viewList);
+                $sql = "SELECT * FROM public.tr1884_matvstats_fn_reset_stats($viewList)";
+                Log::info("Reset SQL: " . $sql);
+                $result = $this->db->connection($this->connection)->select($sql);
+                Log::info("Reset specific stats result: " . json_encode($result));
             }
 
-            $this->logMessage('Statistics reset successfully for ' . ($views ? implode(', ', $views) : 'all views'));
-            return collect($result);
+            // Debug: Check what's being returned
+            $collection = collect($result)->pluck('tr1884_matvstats_fn_reset_stats');
+            Log::info("Returning collection: " . json_encode($collection));
+
+            return $collection;
         } catch (PDOException $e) {
+            Log::error("Reset stats error: " . $e->getMessage());
             $this->handleError('Failed to reset materialized view statistics', $e);
             return collect();
         }

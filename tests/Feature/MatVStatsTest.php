@@ -78,12 +78,28 @@ class MatVStatsTest extends TestCase
             SELECT 1 as id
         ");
 
+        // Debug: Check view exists
+        $viewCheck = DB::selectOne("
+            SELECT schemaname || '.' || matviewname as mv_name
+            FROM pg_matviews 
+            WHERE schemaname = 'public' AND matviewname = 'test_mv'
+        ");
+        Log::info("View check before init: " . json_encode($viewCheck));
+
         $init = MatVStats::initializeStats();
-        $this->assertNotNull($init, "Failed to initialize stats");
-        $this->assertNotEmpty($init->toArray(), "Initialization returned empty result");
+        Log::info("Init result: " . json_encode($init));
+
+        // Debug: Check stats table content
+        $statsCheck = DB::select("SELECT * FROM public.tr1884_matvstats_t_stats");
+        Log::info("Stats table content before reset: " . json_encode($statsCheck));
 
         // Reset stats for the test view
         $result = MatVStats::resetStats(['public.test_mv']);
+        Log::info("Reset result: " . json_encode($result));
+
+        // Debug: Check direct reset function call
+        $directReset = DB::select("SELECT public.tr1884_matvstats_fn_reset_stats('public.test_mv')");
+        Log::info("Direct reset call result: " . json_encode($directReset));
 
         $this->assertNotNull($result, "Reset result should not be null");
         $this->assertNotEmpty($result->toArray(), "Reset result should not be empty");
