@@ -103,19 +103,32 @@ class TestCase extends Orchestra
 
             // Init function
             "CREATE OR REPLACE FUNCTION public.tr1884_matvstats_fn_init()
-                RETURNS SETOF text
-                LANGUAGE sql
-                COST 100
-                VOLATILE PARALLEL UNSAFE
-            AS \$BODY\$
-                INSERT INTO public.tr1884_matvstats_t_stats (mv_name)
-                SELECT schemaname || '.' || matviewname 
-                FROM pg_catalog.pg_matviews 
-                WHERE schemaname || '.' || matviewname NOT IN (
-                    SELECT mv_name FROM public.tr1884_matvstats_t_stats
-                )
-                RETURNING mv_name;
-            \$BODY\$",
+    RETURNS SETOF text
+    LANGUAGE plpgsql
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS \$BODY\$
+DECLARE
+    v_count int;
+BEGIN
+    -- Insert and count affected rows
+    WITH inserted AS (
+        INSERT INTO public.tr1884_matvstats_t_stats (mv_name)
+        SELECT schemaname || '.' || matviewname 
+        FROM pg_catalog.pg_matviews 
+        WHERE schemaname || '.' || matviewname NOT IN (
+            SELECT mv_name FROM public.tr1884_matvstats_t_stats
+        )
+        RETURNING mv_name
+    )
+    SELECT COUNT(*) INTO v_count FROM inserted;
+
+    -- Return all materialized views for verification
+    RETURN QUERY 
+    SELECT mv_name 
+    FROM public.tr1884_matvstats_t_stats;
+END;
+\$BODY\$"
 
             // Trigger function
             "CREATE OR REPLACE FUNCTION public.tr1884_matvstats_fn_trigger()
