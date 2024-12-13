@@ -12,16 +12,27 @@ class MatVStatsTest extends TestCase
     {
         parent::setUp();
 
+        // Clean up any existing test views
+        $this->cleanupTestView();
+
         // Run migrations
         $this->artisan('migrate');
     }
 
     protected function tearDown(): void
     {
-        // Clean up by dropping all package objects
+        // Clean up test views
+        $this->cleanupTestView();
+
+        // Clean up package objects
         MatVStats::dropObjects();
 
         parent::tearDown();
+    }
+
+    protected function cleanupTestView(): void
+    {
+        DB::unprepared("DROP MATERIALIZED VIEW IF EXISTS test_mv");
     }
 
     public function test_can_initialize_stats(): void
@@ -36,9 +47,6 @@ class MatVStatsTest extends TestCase
 
         $this->assertNotEmpty($result);
         $this->assertTrue($result->contains('public.test_mv'));
-
-        // Clean up
-        DB::unprepared("DROP MATERIALIZED VIEW test_mv");
     }
 
     public function test_can_get_stats(): void
@@ -54,9 +62,6 @@ class MatVStatsTest extends TestCase
 
         $this->assertNotEmpty($stats);
         $this->assertNotNull($stats->firstWhere('mv_name', 'public.test_mv'));
-
-        // Clean up
-        DB::unprepared("DROP MATERIALIZED VIEW test_mv");
     }
 
     public function test_can_reset_stats(): void
@@ -72,9 +77,6 @@ class MatVStatsTest extends TestCase
 
         $this->assertNotEmpty($result);
         $this->assertTrue($result->contains('public.test_mv'));
-
-        // Clean up
-        DB::unprepared("DROP MATERIALIZED VIEW test_mv");
     }
 
     public function test_can_get_stats_for_specific_view(): void
@@ -90,8 +92,5 @@ class MatVStatsTest extends TestCase
 
         $this->assertNotNull($stats);
         $this->assertEquals('public.test_mv', $stats->mv_name);
-
-        // Clean up
-        DB::unprepared("DROP MATERIALIZED VIEW test_mv");
     }
 }
