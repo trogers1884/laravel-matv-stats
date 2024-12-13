@@ -114,9 +114,6 @@ class MatVStats
         }
     }
 
-    /**
-     * Handle errors based on configuration
-     */
     private function handleError(string $message, PDOException $exception): void
     {
         if ($this->enableLogging) {
