@@ -10,7 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Define database service
     services:
       postgres:
         image: postgres:latest
@@ -32,7 +31,6 @@ jobs:
         php: [8.1, 8.2]
         laravel: [10.*, 11.*]
         exclude:
-          # Laravel 11 requires PHP 8.2
           - php: 8.1
             laravel: 11.*
 
@@ -64,13 +62,11 @@ jobs:
           DB_USERNAME: postgres
           DB_PASSWORD: postgres
 
-      # Optional: Add code style checking
       - name: Check code style
         run: |
           composer require --dev friendsofphp/php-cs-fixer
-          vendor/bin/php-cs-fixer fix --diff --dry-run
+          vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --diff --dry-run
 
-      # Optional: Add static analysis
       - name: Static Analysis
         run: |
           composer require --dev phpstan/phpstan
