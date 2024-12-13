@@ -128,7 +128,7 @@ BEGIN
     SELECT mv_name 
     FROM public.tr1884_matvstats_t_stats;
 END;
-\$BODY\$"
+\$BODY\$",
 
             // Trigger function
             "CREATE OR REPLACE FUNCTION public.tr1884_matvstats_fn_trigger()
