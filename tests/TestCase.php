@@ -17,7 +17,6 @@ class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
-        // Setup default database configuration
         $app['config']->set('database.default', 'pgsql');
         $app['config']->set('database.connections.pgsql', [
             'driver' => 'pgsql',
@@ -37,17 +36,24 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
-        // Drop all existing objects first
-        $this->dropAllObjects();
+        // Clean up any existing objects first
+        $this->cleanDatabase();
 
-        // Run migrations
-        $this->artisan('migrate');
+        // Create objects in the correct order
+        $statements = $this->getSetupStatements();
+        foreach ($statements as $statement) {
+            try {
+                DB::unprepared($statement);
+            } catch (\Exception $e) {
+                // Log or handle the error
+                throw $e;
+            }
+        }
     }
 
-    protected function dropAllObjects(): void
+    protected function cleanDatabase(): void
     {
-        // Drop objects in correct order without using triggers
-        $statements = [
+        $cleanup = [
             "DROP EVENT TRIGGER IF EXISTS tr1884_matvstats_tr_start",
             "DROP EVENT TRIGGER IF EXISTS tr1884_matvstats_tr_drop",
             "DROP EVENT TRIGGER IF EXISTS tr1884_matvstats_tr_main",
@@ -62,12 +68,39 @@ class TestCase extends Orchestra
             "DROP FUNCTION IF EXISTS public.tr1884_matvstats_fn_drop_objects()"
         ];
 
-        foreach ($statements as $statement) {
+        foreach ($cleanup as $statement) {
             try {
                 DB::unprepared($statement);
             } catch (\Exception $e) {
-                // Ignore errors during cleanup
+                // Ignore cleanup errors
             }
         }
+    }
+
+    protected function getSetupStatements(): array
+    {
+        // Get the SQL statements from your migration file
+        return [
+            // Create base table first
+            "CREATE TABLE IF NOT EXISTS public.tr1884_matvstats_t_stats
+            (
+                mv_name text COLLATE pg_catalog.\"default\",
+                create_mv timestamp without time zone,
+                mod_mv timestamp without time zone,
+                refresh_mv_last timestamp without time zone,
+                refresh_count integer DEFAULT 0,
+                refresh_mv_time_last interval,
+                refresh_mv_time_total interval DEFAULT '00:00:00'::interval,
+                refresh_mv_time_min interval,
+                refresh_mv_time_max interval,
+                reset_last timestamp without time zone
+            )",
+
+            // Then create all functions
+            // ... copy all the function creation statements from your migration ...
+
+            // Create event triggers last
+            // ... copy the event trigger creation statements from your migration ...
+        ];
     }
 }
