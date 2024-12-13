@@ -2,10 +2,10 @@
 
 namespace Trogers1884\LaravelMatVStats\Tests\Feature;
 
-use Trogers1884\LaravelMatVStats\Tests\TestCase;
-use Trogers1884\LaravelMatVStats\Facades\MatVStats;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Trogers1884\LaravelMatVStats\Facades\MatVStats;
+use Trogers1884\LaravelMatVStats\Tests\TestCase;
 
 class MatVStatsTest extends TestCase
 {

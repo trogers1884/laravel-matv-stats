@@ -2,8 +2,8 @@
 
 namespace Trogers1884\LaravelMatVStats\Facades;
 
-use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Facade;
 
 /**
  * @method static Collection getStats()

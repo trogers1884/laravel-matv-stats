@@ -5,8 +5,8 @@ namespace Trogers1884\LaravelMatVStats;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use Trogers1884\LaravelMatVStats\Exceptions\MatVStatsException;
 use PDOException;
+use Trogers1884\LaravelMatVStats\Exceptions\MatVStatsException;
 
 class MatVStats
 {
@@ -24,7 +24,8 @@ class MatVStats
         private readonly string $connection = 'pgsql',
         private readonly bool $enableLogging = false,
         private readonly bool $throwExceptions = true
-    ) {}
+    ) {
+    }
 
     /**
      * Get all materialized view statistics
@@ -38,6 +39,7 @@ class MatVStats
             return collect($result);
         } catch (PDOException $e) {
             $this->handleError('Failed to retrieve materialized view statistics', $e);
+
             return collect();
         }
     }
@@ -66,6 +68,7 @@ class MatVStats
             return collect($result)->pluck('tr1884_matvstats_fn_init');
         } catch (PDOException $e) {
             $this->handleError('Failed to initialize materialized view statistics', $e);
+
             return collect();
         }
     }
@@ -81,7 +84,7 @@ class MatVStats
                     ->select("SELECT * FROM public.tr1884_matvstats_fn_reset_stats('*')");
                 Log::info("Reset all stats result: " . json_encode($result));
             } else {
-                $viewList = implode(',', array_map(fn($view) => "'$view'", $views));
+                $viewList = implode(',', array_map(fn ($view) => "'$view'", $views));
                 Log::info("Resetting stats for views: " . $viewList);
                 $sql = "SELECT * FROM public.tr1884_matvstats_fn_reset_stats($viewList)";
                 Log::info("Reset SQL: " . $sql);
@@ -97,6 +100,7 @@ class MatVStats
         } catch (PDOException $e) {
             Log::error("Reset stats error: " . $e->getMessage());
             $this->handleError('Failed to reset materialized view statistics', $e);
+
             return collect();
         }
     }
@@ -111,9 +115,11 @@ class MatVStats
                 ->statement("SELECT " . self::DROP_FUNCTION . "()");
 
             $this->logMessage('All materialized view statistics objects dropped successfully');
+
             return true;
         } catch (PDOException $e) {
             $this->handleError('Failed to drop materialized view statistics objects', $e);
+
             return false;
         }
     }
@@ -130,6 +136,7 @@ class MatVStats
             return $result[0] ?? null;
         } catch (PDOException $e) {
             $this->handleError("Failed to retrieve statistics for view: $viewName", $e);
+
             return null;
         }
     }
@@ -139,7 +146,7 @@ class MatVStats
         if ($this->enableLogging) {
             Log::error("Laravel MatV Stats: $message", [
                 'error' => $exception->getMessage(),
-                'code' => $exception->getCode()
+                'code' => $exception->getCode(),
             ]);
         }
 

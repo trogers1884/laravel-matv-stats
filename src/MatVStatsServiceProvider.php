@@ -2,15 +2,16 @@
 
 namespace Trogers1884\LaravelMatVStats;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\ServiceProvider;
 
 class MatVStatsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__.'/../config/matv-stats.php', 'matv-stats'
+            __DIR__.'/../config/matv-stats.php',
+            'matv-stats'
         );
 
         $this->app->singleton('matv-stats', function ($app) {

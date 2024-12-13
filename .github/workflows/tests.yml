@@ -65,7 +65,7 @@ jobs:
       - name: Check code style
         run: |
           composer require --dev friendsofphp/php-cs-fixer
-          vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --diff --dry-run
+          vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php
 
       - name: Static Analysis
         run: |

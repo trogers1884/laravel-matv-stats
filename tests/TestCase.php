@@ -2,10 +2,10 @@
 
 namespace Trogers1884\LaravelMatVStats\Tests;
 
-use Orchestra\Testbench\TestCase as Orchestra;
-use Trogers1884\LaravelMatVStats\MatVStatsServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Orchestra\Testbench\TestCase as Orchestra;
+use Trogers1884\LaravelMatVStats\MatVStatsServiceProvider;
 
 class TestCase extends Orchestra
 {
@@ -52,7 +52,7 @@ class TestCase extends Orchestra
             "DROP FUNCTION IF EXISTS public.tr1884_matvstats_fn_trigger()",
             "DROP FUNCTION IF EXISTS public.tr1884_matvstats_fn_reset_stats(VARIADIC text[])",
             "DROP FUNCTION IF EXISTS public.tr1884_matvstats_fn_init()",
-            "DROP FUNCTION IF EXISTS public.tr1884_matvstats_fn_drop_objects()"
+            "DROP FUNCTION IF EXISTS public.tr1884_matvstats_fn_drop_objects()",
         ];
 
         foreach ($cleanup as $statement) {
@@ -72,6 +72,7 @@ class TestCase extends Orchestra
                 DB::unprepared($statement);
             } catch (\Exception $e) {
                 Log::error("Failed to execute SQL: " . $e->getMessage());
+
                 throw $e;
             }
         }
@@ -282,7 +283,7 @@ END;
 
             "CREATE EVENT TRIGGER tr1884_matvstats_tr_start ON ddl_command_start
                 WHEN TAG IN ('REFRESH MATERIALIZED VIEW')
-                EXECUTE FUNCTION public.tr1884_matvstats_fn_trigger_start()"
+                EXECUTE FUNCTION public.tr1884_matvstats_fn_trigger_start()",
         ];
     }
 }
