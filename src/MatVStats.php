@@ -5,6 +5,7 @@ namespace Trogers1884\LaravelMatVStats;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Trogers1884\LaravelMatVStats\Exceptions\MatVStatsException;
 use PDOException;
 
 class MatVStats
