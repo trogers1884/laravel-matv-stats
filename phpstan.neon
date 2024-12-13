@@ -4,5 +4,7 @@ parameters:
         - src
         - tests
     treatPhpDocTypesAsCertain: false
+    checkMissingIterableValueType: false
     ignoreErrors:
-        - '#PHPUnit\\Framework\\Assert::assert.*#'
+        - message: '#Call to method PHPUnit\\Framework\\Assert::assert\w+\(\) with .* will always evaluate to true\.#'
+          path: tests/*
