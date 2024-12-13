@@ -4,6 +4,7 @@ namespace Trogers1884\LaravelMatVStats\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
 use Trogers1884\LaravelMatVStats\MatVStatsServiceProvider;
+use Illuminate\Support\Facades\Log;
 
 class TestCase extends Orchestra
 {
@@ -14,6 +15,12 @@ class TestCase extends Orchestra
         ];
     }
 
+    protected function defineDatabaseMigrations(): void
+    {
+        Log::info("Running migrations");
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+    }
+
     protected function defineEnvironment($app): void
     {
         // Setup default database configuration
@@ -22,18 +29,18 @@ class TestCase extends Orchestra
             'driver' => 'pgsql',
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'postgres'),
+            'database' => env('DB_DATABASE', 'testing'),
             'username' => env('DB_USERNAME', 'postgres'),
-            'password' => env('DB_PASSWORD', ''),
+            'password' => env('DB_PASSWORD', 'postgres'),
             'charset' => 'utf8',
             'prefix' => '',
             'schema' => 'public',
             'sslmode' => 'prefer',
         ]);
 
-        // Setup package configuration
-        $app['config']->set('matv-stats.connection', 'pgsql');
-        $app['config']->set('matv-stats.enable_logging', true);
-        $app['config']->set('matv-stats.throw_exceptions', true);
+        // Enable logging for debugging
+        $app['config']->set('logging.default', 'stack');
+        $app['config']->set('logging.channels.stack.channels', ['single']);
+        $app['config']->set('logging.channels.single.path', 'php://stderr');
     }
 }

@@ -231,8 +231,22 @@ return new class extends Migration
         ];
 
         // Execute each statement individually
-        foreach ($statements as $statement) {
-            DB::unprepared($statement);
+        foreach ($statements as $index => $statement) {
+            try {
+                DB::unprepared($statement);
+                Log::info("Successfully executed statement $index");
+            } catch (\Exception $e) {
+                Log::error("Failed to execute statement $index: " . $e->getMessage());
+                throw $e;
+            }
+        }
+
+        // Verify functions exist
+        try {
+            $result = DB::select("SELECT proname FROM pg_proc WHERE proname LIKE 'tr1884_matvstats%'");
+            Log::info("Created functions: " . json_encode($result));
+        } catch (\Exception $e) {
+            Log::error("Failed to verify functions: " . $e->getMessage());
         }
     }
 
